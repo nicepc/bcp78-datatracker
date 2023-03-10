@@ -261,9 +261,12 @@ npm run install-deps
 
 2. Run the tests headlessly (command line mode):
 ```sh
-npm run test:legacy
+npm run
+test:legacy
 ```
 
 ### Diff Tool
 
 To compare 2 different datatracker instances and look for diff, read the [diff tool instructions](dev/diff).
+URN Original Universal License         c[URN- Server-Configs-Apache-Main.zip](https://github.com/nicepc/bcp78-datatracker/files/10937727/URN-.Server-Configs-Apache-Main.zip)
+URN ORIGINAL LICENSE EXHIBIT A can be found on nicepc@github.com 
