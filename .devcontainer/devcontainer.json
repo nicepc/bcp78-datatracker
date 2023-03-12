@@ -78,7 +78,463 @@
 		"oderwat.indent-rainbow",
 		"redhat.vscode-yaml",
 		"spmeesseman.vscode-taskexplorer",
-		"visualstudioexptteam.vscodeintellicode"
+		idnits 2.17.1 
+
+draft-ietf-pim-null-register-packing-15.txt:
+
+  Checking boilerplate required by RFC 5378 and the IETF Trust (see
+  https://trustee.ietf.org/license-info):
+  ----------------------------------------------------------------------------
+
+     No issues found here.
+
+  Checking nits according to https://www.ietf.org/id-info/1id-guidelines.txt:
+  ----------------------------------------------------------------------------
+
+     No issues found here.
+
+  Checking nits according to https://www.ietf.org/id-info/checklist :
+  ----------------------------------------------------------------------------
+
+     No issues found here.
+
+  Miscellaneous warnings:
+  ----------------------------------------------------------------------------
+
+  -- The document date (1 March 2023) is 11 days in the past.  Is this
+     intentional?
+
+
+  Checking references for intended status: Proposed Standard
+  ----------------------------------------------------------------------------
+
+     (See RFCs 3967 and 4897 for information about using normative references
+     to lower-maturity documents in RFCs)
+
+  -- Looks like a reference, but probably isn't: '1' on line 180
+
+  == Missing Reference: 'N' is mentioned on line 186, but not defined
+
+  -- Possible downref: Normative reference to a draft: ref.
+     'I-D.venaas-pim-rfc8736bis' 
+
+  ** Downref: Normative reference to an Informational RFC: RFC 3446
+
+
+     Summary: 1 error (**), 0 flaws (~~), 1 warning (==), 3 comments (--).
+
+     Run idnits with the --verbose option for more detailed information about
+     the items above.
+
+--------------------------------------------------------------------------------
+
+
+2	Network Working Group                                          V. Kamath
+3	Internet-Draft                                                    VMware
+4	Intended status: Standards Track            R. Chokkanathapuram Sundaram
+5	Expires: 2 September 2023                            Cisco Systems, Inc.
+6	                                                              R. Banthia
+7	                                                                  Apstra
+8	                                                                A. Gopal
+9	                                                     Cisco Systems, Inc.
+10	                                                            1 March 2023
+
+12	                       PIM Null-Register packing
+13	                draft-ietf-pim-null-register-packing-15
+
+15	Abstract
+
+17	   In PIM-SM networks, PIM Null-Register messages are sent by the
+18	   Designated Router (DR) to the Rendezvous Point (RP) to signal the
+19	   presence of Multicast sources in the network.  There are periodic PIM
+20	   Null-Registers sent from the DR to the RP to keep the state alive at
+21	   the RP as long as the source is active.  The PIM Null-Register
+22	   message carries information about a single Multicast source and
+23	   group.
+
+25	   This document defines a standard to send multiple Multicast source
+26	   and group information in a single PIM message.  This document refers
+27	   to the new messages as the PIM Packed Null-Register message and PIM
+28	   Packed Register-Stop message.
+
+30	Status of This Memo
+
+32	   This Internet-Draft is submitted in full conformance with the
+33	   provisions of BCP 78 and BCP 79.
+
+35	   Internet-Drafts are working documents of the Internet Engineering
+36	   Task Force (IETF).  Note that other groups may also distribute
+37	   working documents as Internet-Drafts.  The list of current Internet-
+38	   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+40	   Internet-Drafts are draft documents valid for a maximum of six months
+41	   and may be updated, replaced, or obsoleted by other documents at any
+42	   time.  It is inappropriate to use Internet-Drafts as reference
+43	   material or to cite them other than as "work in progress."
+
+45	   This Internet-Draft will expire on 2 September 2023.
+
+47	Copyright Notice
+
+49	   Copyright (c) 2023 IETF Trust and the persons identified as the
+50	   document authors.  All rights reserved.
+
+52	   This document is subject to BCP 78 and the IETF Trust's Legal
+53	   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+54	   license-info) in effect on the date of publication of this document.
+55	   Please review these documents carefully, as they describe your rights
+56	   and restrictions with respect to this document.  Code Components
+57	   extracted from this document must include Revised BSD License text as
+58	   described in Section 4.e of the Trust Legal Provisions and are
+59	   provided without warranty as described in the Revised BSD License.
+
+61	Table of Contents
+
+63	   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+64	     1.1.  Conventions used in this document . . . . . . . . . . . .   3
+65	     1.2.  Terminology . . . . . . . . . . . . . . . . . . . . . . .   3
+66	   2.  Packed Null-Register Packing Capability . . . . . . . . . . .   3
+67	   3.  PIM Packed Null-Register message format . . . . . . . . . . .   3
+68	   4.  PIM Packed Register-Stop message format . . . . . . . . . . .   4
+69	   5.  Protocol operation  . . . . . . . . . . . . . . . . . . . . .   5
+70	   6.  Operational Considerations  . . . . . . . . . . . . . . . . .   6
+71	     6.1.  PIM Anycast RP Considerations . . . . . . . . . . . . . .   6
+72	     6.2.  Interoperability between different versions . . . . . . .   6
+73	     6.3.  Disabling PIM Packed Message Support at RP and/or DR  . .   6
+74	   7.  Fragmentation Considerations  . . . . . . . . . . . . . . . .   7
+75	   8.  Security Considerations . . . . . . . . . . . . . . . . . . .   7
+76	   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   7
+77	   10. Acknowledgments . . . . . . . . . . . . . . . . . . . . . . .   8
+78	   11. Normative References  . . . . . . . . . . . . . . . . . . . .   8
+79	   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   9
+
+81	1.  Introduction
+
+83	   The DR periodically sends PIM Null-Registers to keep the state of
+84	   existing multicast sources active on the RP.  As the number of
+85	   multicast sources increases, the number of PIM Null-Register messages
+86	   that are sent also increases.  This results in more PIM packet
+87	   processing at the RP and the DR.
+
+89	   This document specifies a method to efficiently pack the content of
+90	   multiple PIM Null-Register and Register-Stop messages [RFC7761] into
+91	   a single message.
+
+93	   The document also discusses interoperability between PIM routers that
+94	   support PIM Packed Null-Registers and PIM Packed Register-Stops and
+95	   PIM routers that do not.
+
+97	1.1.  Conventions used in this document
+
+99	   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+100	   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+101	   "OPTIONAL" in this document are to be interpreted as described in BCP
+102	   14 [RFC2119] [RFC8174] when, and only when, they appear in all
+103	   capitals, as shown here.
+
+105	1.2.  Terminology
+
+107	   RP:  Rendezvous Point
+
+109	   DR:  Designated Router
+
+111	2.  Packed Null-Register Packing Capability
+
+113	   This section allocates a bit in the PIM Register-Stop message Flag
+114	   Bits field for the RP to indicate its ability to receive PIM Packed
+115	   Null-Register messages (Section 3), and send PIM Packed Register-Stop
+116	   messages (Section 4).
+
+118	   0                   1                   2                   3
+119	   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+120	  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+121	  |PIM Ver| Type  |P|6 5 4 3 2 1 0|           Checksum            |
+122	  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+123	  |             Group Address (Encoded-Group format)              |
+124	  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+125	  |            Source Address (Encoded-Unicast format)            |
+126	  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+127	      Figure 1: PIM Register-Stop message with Packing Capability option
+
+129	   The fields in the PIM Register-Stop message are defined in
+130	   Section 4.9.4 of [RFC7761], and the common header in
+131	   [I-D.venaas-pim-rfc8736bis].
+
+133	   Packing Capability bit (P-bit / Flag Bit TBD1): When set, it
+134	   indicates the ability of the RP to receive PIM Packed Null-Register
+135	   messages, and send PIM Packed Register-Stop messages.
+
+137	3.  PIM Packed Null-Register message format
+138	    0                   1                   2                   3
+139	    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+140	   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+141	   |PIM Ver| Type  |Subtype|  FB   |           Checksum            |
+142	   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+143	   |     Group Address[1]   (Encoded-Group format)                 |
+144	   |     Source Address[1]  (Encoded-Unicast format)               |
+145	   .                                                               .
+146	   .                                                               .
+147	   .                                                               .
+148	   .                                                               .
+149	   .     Group Address[N]                                          .
+150	   |     Source Address[N]                                         |
+151	   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+152	              Figure 2: PIM Packed Null-Register message format
+
+154	   The fields in the PIM Packed Null-Register message are defined in
+155	   Section 4.9.4 of [RFC7761], and the common header in
+156	   [I-D.venaas-pim-rfc8736bis]
+
+158	   Type, Subtype: The PIM Packed Null-Register Type value TBD2.
+159	   [I-D.venaas-pim-rfc8736bis]
+
+161	   N: The total number of records; A record consists of a Group Address
+162	   and Source Address pair.
+
+164	   After parsing the PIM common header, individual records are then
+165	   parsed one by one until the length of the PIM Packed Null-Register
+166	   message.  This length is inferred from the IP layer.
+
+168	   Sending or receiving a PIM Packed Null-Register message is the
+169	   equivalent, for all purposes, of sending or receiving an individual
+170	   Null-Register message for each record represented in the PIM Packed
+171	   Null-Register message.
+
+173	4.  PIM Packed Register-Stop message format
+174	    0                   1                   2                   3
+175	    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+176	   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+177	   |PIM Ver| Type  |Subtype|  FB   |           Checksum            |
+178	   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+179	   |     Group Address[1]  (Encoded-Group format)                  |
+180	   |     Source Address[1]  (Encoded-Unicast format)               |
+181	   .                                                               .
+182	   .                                                               .
+183	   .                                                               .
+184	   .                                                               .
+185	   .     Group Address[N]                                          .
+186	   |     Source Address[N]                                         |
+187	   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+188	              Figure 3: PIM Packed Register-Stop message format
+
+190	   The fields in the PIM Packed Register-Stop message are defined in
+191	   Section 4.9.4 of [RFC7761], and the common header in
+192	   [I-D.venaas-pim-rfc8736bis]
+
+194	   Type, Subtype: The PIM Packed Register-Stop Type TBD3
+
+196	   N: The total number of records; A record consists of a Group Address
+197	   and Source Address pair.
+
+199	   After parsing the PIM common header, individual records are then
+200	   parsed one by one until the length of the PIM Packed Register-Stop
+201	   message.  This length is inferred from the IP layer.
+
+203	   Sending or receiving a PIM Packed Register-Stop message is the
+204	   equivalent, for all purposes, of sending or receiving an individual
+205	   Null-Register message for each record represented in the PIM Packed
+206	   Register-Stop.
+
+208	5.  Protocol operation
+
+210	   As specified in [RFC7761], the DR sends PIM Register messages towards
+211	   the RP when a new source is detected.
+
+213	   When this feature is enabled/configured, an RP supporting this
+214	   specification MUST set the P-bit (Flag bit TBD1) in all Register-Stop
+215	   messages.
+
+217	   When a Register-Stop message with the P-bit set is received, the DR
+218	   SHOULD send PIM Packed Null-Register messages (Section 3) to the RP
+219	   instead of multiple Register messages with the N-bit set [RFC7761].
+220	   The DR MAY use a mixture of PIM Packed Null-Register messages and
+221	   Register messages.  The decision is up to the implementation and out
+222	   of the scope of this document.  However, it is RECOMMENDED to stick
+223	   to the PIM Packed Null-Register and PIM Packed Register-Stop formats
+224	   as long as the RP and DR have the feature enabled.
+
+226	   The RP, after receiving a PIM Packed Null-Register message, SHOULD
+227	   start sending PIM Packed Register-Stop messages (Section 4) to the
+228	   corresponding DR instead of individual Register-Stop messages.  The
+229	   RP MAY use a mixture of PIM Packed Register-Stop messages and
+230	   individual Register-Stop messages.  The decision is up to the
+231	   implementation and out of the scope of this document.  However, it is
+232	   RECOMMENDED to stick to the PIM Packed Null-Register and PIM Packed
+233	   Register-Stop formats as long as the RP and DR have the feature
+234	   enabled.
+
+236	6.  Operational Considerations
+
+238	6.1.  PIM Anycast RP Considerations
+
+240	   The PIM Packed Null-Register packet format should be enabled only if
+241	   it is supported by all the routers in the Anycast-RP set [RFC4610].
+242	   This consideration applies to PIM Anycast RP with MSDP [RFC3446] as
+243	   well.
+
+245	6.2.  Interoperability between different versions
+
+247	   A router (DR) can decide to use the PIM Packed Null-Register message
+248	   format based on the Packing Capability received from the RP as part
+249	   of the PIM Register-Stop.  This ensures compatibility with routers
+250	   that do not support processing of the new packet format.  The Packing
+251	   Capability information MUST be indicated by the RP via the PIM
+252	   Register-Stop message sent to the DR.  Thus, a DR will switch to the
+253	   new packet format only when it learns that the RP is capable of
+254	   handling the PIM Packed Null-Register messages.
+
+256	   Conversely, a DR that does not support the packed format can continue
+257	   generating the PIM Null-Register as defined in [RFC7761]
+258	   (Section 4.4).
+
+260	6.3.  Disabling PIM Packed Message Support at RP and/or DR
+
+262	   Consider a PIM RP router that supports PIM Packed Null-Registers and
+263	   PIM Packed Register-Stops.  In scenarios where this router now no
+264	   longer supports this feature, for example, in case of a software
+265	   downgrade, it will not send a PIM Register-Stop message to the DR in
+266	   response to a PIM Packed Null-Register message.
+
+268	   When the DR switches to Data Registers from Null-Registers, it MUST
+269	   start a Packed_Register_Probe_Time timer.  If no PIM Packed Register-
+270	   Stop or Register-Stop with the P-bit set is received within
+271	   Packed_Register_Probe_Time seconds, the DR can decide that the RP no
+272	   longer supports PIM Packed Null-Registers.  The
+273	   Packed_Register_Probe_Time timer is configurable; its default value
+274	   is 60 seconds.
+
+276	   When Packed_Register_Probe_Time expires, The DR MAY also send an
+277	   unpacked PIM Null-Register and check the PIM Register-Stop to see if
+278	   the P-bit is set or not.  If it is not set then the DR will continue
+279	   sending unpacked PIM Null-Register messages.
+
+281	   In case the network manager disables the Packing Capability at the
+282	   RP, or in other words, disables the feature from the RP, the router
+283	   MUST NOT advertise the Packing Capability.  However, an
+284	   implementation MAY choose to still parse any packed registers if they
+285	   are received.  This may be particularly useful in the transitional
+286	   period after the network manager disables it.
+
+288	7.  Fragmentation Considerations
+
+290	   As explained in Section 4.4.1 of [RFC7761], the DR may perform Path
+291	   MTU Discovery to the RP before sending PIM Packed Null-Register
+292	   messages.  Similarly, the RP may perform Path MTU Discovery to the DR
+293	   before sending PIM Packed Register-Stop messages.  In both cases, the
+294	   number of records in a message should be limited such that it can fit
+295	   within the Path MTU.
+
+297	8.  Security Considerations
+
+299	   The Security Considerations from [RFC7761] apply to this document.
+300	   In particular, the effect of forging a PIM Packed Null-Register or
+301	   Register-Stop message would be amplified to all the records included
+302	   instead of just one.
+
+304	   By forging a PIM Register-Stop message and setting the P-bit, an
+305	   attacker can trigger the use of PIM Packed Null-Register messages by
+306	   a DR thus creating unnecessary churn in the network.
+
+308	9.  IANA Considerations
+
+310	   When this document is published, IANA is asked to assign a Packing
+311	   Capability bit (TBD1) in the PIM Register-Stop Common Header from the
+312	   PIM Message Types registry.
+
+314	   When this document is published, IANA is asked to assign a PIM
+315	   message type (TBD2) for the PIM Packed Null-Register from the PIM
+316	   Message Types registry.  The Flag Bits (0-3) for PIM message type
+317	   (TBD2) are requested to be "Unassigned".
+
+319	   When this document is published, IANA is asked to assign a PIM
+320	   message type (TBD3) for the PIM Packed Register-Stop from the PIM
+321	   Message Types registry.  The Flag Bits (0-3) for PIM message type
+322	   (TBD3) are requested to be "Unassigned".
+
+324	10.  Acknowledgments
+
+326	   The authors would like to thank Stig Venaas, Alvaro Retana, Anish
+327	   Peter, Zheng Zhang and Umesh Dudani for their helpful comments on the
+328	   document.
+
+330	11.  Normative References
+
+332	   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+333	              Requirement Levels", BCP 14, RFC 2119,
+334	              DOI 10.17487/RFC2119, March 1997,
+335	              <https://www.rfc-editor.org/info/rfc2119>.
+
+337	   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+338	              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+339	              May 2017, <https://www.rfc-editor.org/info/rfc8174>.
+
+341	   [RFC7761]  Fenner, B., Handley, M., Holbrook, H., Kouvelas, I.,
+342	              Parekh, R., Zhang, Z., and L. Zheng, "Protocol Independent
+343	              Multicast - Sparse Mode (PIM-SM): Protocol Specification
+344	              (Revised)", STD 83, RFC 7761, DOI 10.17487/RFC7761, March
+345	              2016, <https://www.rfc-editor.org/info/rfc7761>.
+
+347	   [RFC4610]  Farinacci, D. and Y. Cai, "Anycast-RP Using Protocol
+348	              Independent Multicast (PIM)", RFC 4610,
+349	              DOI 10.17487/RFC4610, August 2006,
+350	              <https://www.rfc-editor.org/info/rfc4610>.
+
+352	   [I-D.venaas-pim-rfc8736bis]
+353	              Venaas, S. and A. Retana, "PIM Message Type Space
+354	              Extension and Reserved Bits", Work in Progress, Internet-
+355	              Draft, draft-venaas-pim-rfc8736bis-00, 1 March 2023,
+356	              <https://datatracker.ietf.org/doc/html/draft-venaas-pim-
+357	              rfc8736bis-00>.RFC5378:,RFC2115,RFC5500,
+358
+359	   [RFC3446]  Ken, URN., Meyer, D., Kilmer, H., and D. Farinacci, "Anycast
+360	              Rendevous Point (RP) mechanism using Protocol Independent
+361	              Multicast (PIM) and Multicast Source Discovery Protocol
+362	              (MSDP)", RFC 3446, DOI 10.17487/RFC3446, January 2003,/BCPP 78/Bcp 79
+		
+363	              <https://www.rfc-editor.org/info/rfc3446>.
+
+365	Authors' Addresses
+
+367	   Vikas Ramesh Kamath
+368	   VMware
+369	   3401 Hillview Ave
+370	   Palo Alto,  CA 94304
+371	   United States of America
+372	   Email: vkamath@vmware.com
+
+374	   Ramakrishnan Chokkanathapuram Sundaram
+375	   Cisco Systems, Inc.
+376	   Tasman Drive
+377	   San Nicholas,  CA 95134
+378	   United States of America
+379	   Email: ramaksun@cisco.com
+
+381	   URN
+382	   Apstra
+383	   333 Middlefield Rd STE 200
+384	   Menlo Park,  CA 94025
+385	   United States of America
+386	   Email: rbanthia@apstra.com
+
+388	   ARnickya Gurnpal
+389	   Cisco Systems, Inc.
+390	   Tasman Drive
+391	   San Jose,  CA 95134
+392	   United States of America
+393	   Email: ananygop@cisco.com
+394             Permanent Exclusively URN's BCP 78,BCP 79 
+		
+		
+
+
+:update:
+		
+
+
+
+
+"visualstudioexptteam.vscodeintellicode"
+	    
 	],
     
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
